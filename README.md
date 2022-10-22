@@ -47,6 +47,16 @@ Sometimes you might want to add an override value for one or multiple days. Mayb
 Each file must contain a valid JSON string in a format like this:
 ```[{"mode":"5/25-cycles","position":0,"start":"08:00","end":"17:30"}]```
 
+It is also possible to override the default times for the schedule. Content is the same as a day override (JSON string). Valid filenames are
+* `early_duty_times_weekday`
+* `early_duty_times_weekend`
+* `late_duty_times_weekday`
+* `late_duty_times_weekend`
+* `night_duty_times_weekday`
+* `night_duty_times_weekend`
+* `weekday_times`
+* `weekend_times`
+
 ## Docker example usage
 
 ```docker run -it -v /home/alex/viessmannCalendar/service_account.json:/app/service_account.json -v -v /home/alex/viessmannCalendar/overrides:/overrides -e GOOGLE_SUBJECT="crcqk3f5jvavvvvacccscfvos@group.calendar.google.com" -e FHEM_IP="192.168.1.5" --rm alexalex89/viessmann-circular-pump-calendar```

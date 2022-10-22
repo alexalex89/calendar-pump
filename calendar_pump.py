@@ -56,23 +56,36 @@ def calc_times(events, utc_end, utc_now):
 
     # valid cycles: 5/25 and 5/10
     template_single_entry = """{{"start":"{start}","position":{position},"end":"{end}","mode":"5/{cycle}-cycles"}}"""
-    early_duty_times_weekday = [eval(template_single_entry.format(start="04:00", end="06:30", cycle=25, position=0)),
-                                eval(template_single_entry.format(start="11:45", end="19:30", cycle=25, position=1))]
-    early_duty_times_weekend = [eval(template_single_entry.format(start="04:00", end="05:10", cycle=25, position=0)),
-                                eval(template_single_entry.format(start="08:00", end="09:30", cycle=25, position=1)),
-                                eval(template_single_entry.format(start="11:40", end="19:30", cycle=25, position=2))]
-    late_duty_times_weekday = [eval(template_single_entry.format(start="05:50", end="12:30", cycle=25, position=0)),
-                               eval(template_single_entry.format(start="17:30", end="19:30", cycle=25, position=1))]
-    late_duty_times_weekend = [eval(template_single_entry.format(start="08:00", end="12:30", cycle=25, position=0)),
-                               eval(template_single_entry.format(start="17:30", end="19:30", cycle=25, position=1))]
-    night_duty_times_weekday = [eval(template_single_entry.format(start="05:50", end="06:30", cycle=25, position=0)),
-                                eval(template_single_entry.format(start="11:40", end="19:30", cycle=25, position=1))]
-    night_duty_times_weekend = [eval(template_single_entry.format(start="08:00", end="09:30", cycle=25, position=0)),
-                                eval(template_single_entry.format(start="11:40", end="19:30", cycle=25, position=1))]
-    weekday_times = [eval(template_single_entry.format(start="05:50", end="06:30", cycle=25, position=0)),
-                     eval(template_single_entry.format(start="09:00", end="13:00", cycle=25, position=1)),
-                     eval(template_single_entry.format(start="16:30", end="19:30", cycle=25, position=2))]
-    weekend_times = [eval(template_single_entry.format(start="08:00", end="19:30", cycle=25, position=0))]
+    times = {"early_duty_times_weekday": [
+        eval(template_single_entry.format(start="04:00", end="06:30", cycle=10, position=0)),
+        eval(template_single_entry.format(start="11:45", end="19:30", cycle=25, position=1))],
+             "early_duty_times_weekend": [
+                 eval(template_single_entry.format(start="04:00", end="05:10", cycle=10, position=0)),
+                 eval(template_single_entry.format(start="08:00", end="09:30", cycle=25, position=1)),
+                 eval(template_single_entry.format(start="11:40", end="19:30", cycle=25, position=2))],
+             "late_duty_times_weekday": [
+                 eval(template_single_entry.format(start="05:50", end="06:30", cycle=10, position=0)),
+                 eval(template_single_entry.format(start="09:00", end="12:30", cycle=25, position=1)),
+                 eval(template_single_entry.format(start="17:30", end="19:30", cycle=25, position=2))],
+             "late_duty_times_weekend": [
+                 eval(template_single_entry.format(start="08:00", end="12:30", cycle=25, position=0)),
+                 eval(template_single_entry.format(start="17:30", end="19:30", cycle=25, position=1))],
+             "night_duty_times_weekday": [
+                 eval(template_single_entry.format(start="05:50", end="06:30", cycle=10, position=0)),
+                 eval(template_single_entry.format(start="11:40", end="19:30", cycle=25, position=1))],
+             "night_duty_times_weekend": [
+                 eval(template_single_entry.format(start="08:00", end="09:30", cycle=10, position=0)),
+                 eval(template_single_entry.format(start="11:40", end="19:30", cycle=25, position=1))],
+             "weekday_times": [eval(template_single_entry.format(start="05:50", end="06:30", cycle=10, position=0)),
+                               eval(template_single_entry.format(start="09:00", end="13:00", cycle=25, position=1)),
+                               eval(template_single_entry.format(start="17:30", end="19:30", cycle=10, position=2))],
+             "weekend_times": [eval(template_single_entry.format(start="08:00", end="19:30", cycle=25, position=0))]}
+    for description in times.keys():
+        override = pathlib.Path("/overrides").joinpath(description)
+        if override.exists():
+            print(f"Found override for {description}.")
+            with override.open("r") as f_override:
+                times[description] = json.load(f_override)
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
 
@@ -89,28 +102,29 @@ def calc_times(events, utc_end, utc_now):
 
         override = pathlib.Path("/overrides").joinpath(day)
         if override.exists():
+            print(f"Found override for {day}.")
             with override.open("r") as f_override:
                 result[day] = json.load(f_override)
         else:
             if utc_now in early_duties:
                 if day in ("sat", "sun"):
-                    result[day] = early_duty_times_weekend
+                    result[day] = times["early_duty_times_weekend"]
                 else:
-                    result[day] = early_duty_times_weekday
+                    result[day] = times["early_duty_times_weekday"]
             elif utc_now in late_duties:
                 if day in ("sat", "sun"):
-                    result[day] = late_duty_times_weekend
+                    result[day] = times["late_duty_times_weekend"]
                 else:
-                    result[day] = late_duty_times_weekday
+                    result[day] = times["late_duty_times_weekday"]
             elif utc_now in night_duties:
                 if day in ("sat", "sun"):
-                    result[day] = night_duty_times_weekend
+                    result[day] = times["night_duty_times_weekend"]
                 else:
-                    result[day] = night_duty_times_weekday
+                    result[day] = times["night_duty_times_weekday"]
             elif day in ("sat", "sun"):
-                result[day] = weekend_times
+                result[day] = times["weekend_times"]
             else:
-                result[day] = weekday_times
+                result[day] = times["weekday_times"]
         print(f"{day}: {' | '.join(entry['start'] + '-' + entry['end'] for entry in result[day])}")
         utc_now += datetime.timedelta(days=1)
     return result
