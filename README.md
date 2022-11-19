@@ -39,6 +39,11 @@ This script uses environment variables. All variables are mandatory using the Py
 | EARLY_DUTY_LABEL        | Early duty                                          | Anja Frühdienst    | Label of the Google event for early duty (substring)  |
 | LATE_DUTY_LABEL         | Late duty                                           | Anja Spätdienst    | Label of the Google event for late duty (substring)   |
 | NIGHT_DUTY_LABEL        | Night duty                                          | Anja Nachtdienst   | Label of the Google event for night duty (substring)  |
+| HOTWATER                | 1                                                   | 0                  | Set times for hot water production                    |
+
+## Hot water
+
+The times of hot water production can as well be set using this script. It can be enabled by setting the `HOTWATER` environment variable to `1`. This will start hot water production one hour earlier than circular pump and end at 10 PM every day.
 
 ## Overrides
 

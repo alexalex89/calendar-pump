@@ -4,6 +4,7 @@ ENV FHEM_VITOCONNECT_OBJECT="vitoconnect"
 ENV EARLY_DUTY_LABEL="Anja Frühdienst"
 ENV LATE_DUTY_LABEL="Anja Spätdienst"
 ENV NIGHT_DUTY_LABEL="Anja Nachtdienst"
+ENV HOTWATER="0"
 
 WORKDIR /app
 COPY calendar_pump.py requirements.txt /app/
